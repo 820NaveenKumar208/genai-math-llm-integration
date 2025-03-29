@@ -18,61 +18,37 @@ Integrate the function into an LLM-based chat completion system with function-ca
 
 ### PROGRAM:
 ```
-import openai
-import json
-import math
 
-def calculate_cylinder_volume(radius: float, height: float) -> float:
-    """Calculate the volume of a cylinder."""
-    return math.pi * radius**2 * height
+    import openai
 
-# Define available functions for the LLM
-functions = [
-    {
-        "name": "calculate_cylinder_volume",
-        "description": "Calculate the volume of a cylinder given radius and height.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "radius": {"type": "number", "description": "Radius of the cylinder."},
-                "height": {"type": "number", "description": "Height of the cylinder."}
-            },
-            "required": ["radius", "height"]
-        }
-    }
-]
+def cylinder_volume(radius, height):
+    return 3.14159 * radius ** 2 * height
 
-# Function to handle chat completion with function calling
-def chat_with_function(user_input: str):
-    response = openai.ChatCompletion.create(
-        model="gpt-4-1106-preview",  # Ensure this is a function-calling supported model
-        messages=[{"role": "user", "content": user_input}],
-        functions=functions,
-        function_call="auto"  # Let the model decide if function calling is needed
-    )
-    
-    message = response["choices"][0]["message"]
-    if message.get("function_call"):
-        function_name = message["function_call"]["name"]
-        arguments = json.loads(message["function_call"]["arguments"])
-        
-        if function_name == "calculate_cylinder_volume":
-            result = calculate_cylinder_volume(**arguments)
-            return f"The volume of the cylinder is {result:.2f} cubic units."
-    
-    return message.get("content", "I couldn't process your request.")
+def get_user_input():
+    try:
+        radius = float(input("Enter the radius of the cylinder: "))
+        height = float(input("Enter the height of the cylinder: "))
+        return radius, height
+    except ValueError:
+        return None, None
 
-# Example usage
+def chat_completion_system():
+    radius, height = get_user_input()
+    if radius is not None and height is not None:
+        result = cylinder_volume(radius, height)
+        print(f"Volume of the cylinder: {result}")
+    else:
+        print("Invalid input. Please enter numeric values.")
+
 if __name__ == "__main__":
-    radius = float(input("Enter the radius of the cylinder: "))
-    height = float(input("Enter the height of the cylinder: "))
-    user_query = f"What is the volume of a cylinder with radius {radius} and height {height}?"
-    print(chat_with_function(user_query))
+    chat_completion_system()
+
 
 ```
 
 ### OUTPUT:
-![WhatsApp Image 2025-03-29 at 10 33 53_ad2a9727](https://github.com/user-attachments/assets/0354af80-226e-4fbd-b607-935c8ed85cb2)
+![Screenshot 2025-03-29 110308](https://github.com/user-attachments/assets/779f65d4-8007-479a-8b88-9e1311d0397d)
+
 
 
 
