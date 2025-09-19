@@ -1,53 +1,113 @@
+## NAME : NAVEEN KUMAR T
+## REG NO : 212223220067
 ## Integration of a Mathematical Calulations with a Chat Completion System using LLM Function-Calling
 
 ### AIM:
-To design and implement a Python function for calculating the volume of a cylinder, integrate it with a chat completion system utilizing the function-calling feature of a large language model (LLM).
+To integrate mathematical calculations with a Chat Completion System using LLM Function-Calling by building a Python program that calculates the volume of a sphere based on user queries. The system uses OpenAI’s function-calling capability to connect natural language requests with precise mathematical computations.
 
-### PROBLEM STATEMENT:
+
 
 ### DESIGN STEPS:
 
 #### STEP 1:
-Import necessary libraries, including OpenAI for LLM integration and math for mathematical operations.
+Import necessary libraries:
+os and dotenv → to securely load the OpenAI API key.
+openai → for Chat Completion with function-calling.
+json → to handle structured input and output.
 
 #### STEP 2:
-Define a Python function to calculate the volume of a cylinder based on its radius and height.
+Define a Python function (sphere_volume) that calculates the volume of a sphere using the formula:
+V=4/3​πr3
 
 #### STEP 3:
-Integrate the function into an LLM-based chat completion system with function-calling capabilities.
+Describe the function schema (name, description, and parameters) and pass it to the LLM as a tool. This tells the model how and when to call the Python function.
+
+#### STEP 4:
+Simulate a conversation by creating a user query such as:
+“What is the volume of a sphere with radius 5 meters?”
+
+#### STEP 5: 
+Check if the LLM requests a function_call
+
+#### STEP 6
+Print the final result, which provides an accurate mathematical answer expressed in natural language.
 
 ### PROGRAM:
 ```
 
-    import openai
+import os
+import json
+import openai
+from dotenv import load_dotenv
 
-def cylinder_volume(radius, height):
-    return 3.14159 * radius ** 2 * height
+# 🔹 Load API key from .env
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def get_user_input():
-    try:
-        radius = float(input("Enter the radius of the cylinder: "))
-        height = float(input("Enter the height of the cylinder: "))
-        return radius, height
-    except ValueError:
-        return None, None
 
-def chat_completion_system():
-    radius, height = get_user_input()
-    if radius is not None and height is not None:
-        result = cylinder_volume(radius, height)
-        print(f"Volume of the cylinder: {result}")
-    else:
-        print("Invalid input. Please enter numeric values.")
+def sphere_volume(radius: float) -> str:
+    """
+    Calculate the volume of a sphere given its radius.
+    Formula: V = 4/3 * π * r³
+    """
+    pi = 3.141592653589793
+    volume = (4 / 3) * pi * (radius ** 3)
+    return json.dumps({"radius": radius, "volume": volume})
 
-if __name__ == "__main__":
-    chat_completion_system()
+tools = [
+    {
+        "name": "sphere_volume",
+        "description": "Find the volume of a sphere based on its radius.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "radius": {
+                    "type": "number",
+                    "description": "Radius of the sphere in meters."
+                }
+            },
+            "required": ["radius"]
+        }
+    }
+]
+
+
+messages = [
+    {"role": "user", "content": "What is the volume of a sphere with radius 5 meters?"}
+]
+
+response = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=messages,
+    functions=tools
+)
+
+response_message = response["choices"][0]["message"]
+
+
+if "function_call" in response_message:
+    fn_args = json.loads(response_message["function_call"]["arguments"])
+    result = sphere_volume(**fn_args)
+
+    # Append function response to chat history
+    messages.append({
+        "role": "function",
+        "name": "sphere_volume",
+        "content": result,
+    })
+
+    final_response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages
+    )
+
+    print(final_response["choices"][0]["message"]["content"])#T.NaveenKumar_212223220067
 
 
 ```
 
 ### OUTPUT:
-![Screenshot 2025-03-29 110308](https://github.com/user-attachments/assets/779f65d4-8007-479a-8b88-9e1311d0397d)
+<img width="1640" height="279" alt="Screenshot 2025-09-19 110225" src="https://github.com/user-attachments/assets/e1367e6a-9d8e-4c85-b644-408714157e76" />
 
 
 
